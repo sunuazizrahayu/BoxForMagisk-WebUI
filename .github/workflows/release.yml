@@ -1,4 +1,4 @@
-name: Create Release
+name: Create or Update Release
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    name: Release Job
+    name: Create or Update Release
     runs-on: ubuntu-latest
 
     steps:
@@ -17,21 +17,35 @@ jobs:
         with:
           fetch-depth: 0 # Pastikan semua data git history diambil
 
-      # Step 2: Buat file ZIP dengan nama sesuai tag
+      # Step 2: Install GitHub CLI (gh)
+      - name: Install GitHub CLI
+        run: sudo apt-get install -y gh
+
+      # Step 3: Buat file ZIP dengan mengecualikan `.github`
       - name: Create zip file
         run: |
           mkdir build
           ZIP_NAME="BoxForMagisk-WebUI-${{ github.ref_name }}.zip"
-          git archive --format=zip --output="build/$ZIP_NAME" HEAD
+          git archive --format=zip --output="build/$ZIP_NAME" HEAD ':!/.github'
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
-      # Step 3: Upload ZIP sebagai asset release
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-          files: build/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Step 4: Periksa apakah release dengan tag sudah ada
+      - name: Check if release exists
+        id: check_release
+        run: |
+          RELEASE_EXISTS=$(gh release view ${{ github.ref_name }} --json id --jq '.id' || echo "")
+          echo "RELEASE_EXISTS=$RELEASE_EXISTS" >> $GITHUB_ENV
+
+      # Step 5: Buat release jika belum ada
+      - name: Create release if not exists
+        if: env.RELEASE_EXISTS == ''
+        run: |
+          gh release create ${{ github.ref_name }} build/${{ env.ZIP_NAME }} \
+            --title "Release ${{ github.ref_name }}" \
+            --notes "Auto-generated release for tag ${{ github.ref_name }}"
+
+      # Step 6: Tambahkan asset ke release yang ada
+      - name: Upload asset to existing release
+        if: env.RELEASE_EXISTS != ''
+        run: |
+          gh release upload ${{ github.ref_name }} build/${{ env.ZIP_NAME }} --clobber

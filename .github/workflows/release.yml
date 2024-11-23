@@ -1,0 +1,37 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger hanya untuk tag yang diawali dengan 'v'
+
+jobs:
+  release:
+    name: Release Job
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Pastikan semua data git history diambil
+
+      # Step 2: Buat file ZIP dengan nama sesuai tag
+      - name: Create zip file
+        run: |
+          mkdir build
+          ZIP_NAME="BoxForMagisk-WebUI-${{ github.ref_name }}.zip"
+          git archive --format=zip --output="build/$ZIP_NAME" HEAD
+
+      # Step 3: Upload ZIP sebagai asset release
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: build/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

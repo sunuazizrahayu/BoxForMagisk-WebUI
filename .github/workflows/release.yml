@@ -21,7 +21,15 @@ jobs:
       - name: Install GitHub CLI
         run: sudo apt-get install -y gh
 
-      # Step 3: Buat file ZIP dengan mengecualikan `.github`
+      # Step 3: Set GH_TOKEN environment variable
+        # GH_TOKEN digunakan oleh GitHub CLI untuk autentikasi
+      - name: Configure GitHub CLI token
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "GitHub CLI configured."
+
+      # Step 4: Buat file ZIP dengan mengecualikan `.github`
       - name: Create zip file
         run: |
           mkdir build
@@ -29,23 +37,29 @@ jobs:
           git archive --format=zip --output="build/$ZIP_NAME" HEAD ':!/.github'
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
-      # Step 4: Periksa apakah release dengan tag sudah ada
+      # Step 5: Periksa apakah release dengan tag sudah ada
       - name: Check if release exists
         id: check_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           RELEASE_EXISTS=$(gh release view ${{ github.ref_name }} --json id --jq '.id' || echo "")
           echo "RELEASE_EXISTS=$RELEASE_EXISTS" >> $GITHUB_ENV
 
-      # Step 5: Buat release jika belum ada
+      # Step 6: Buat release jika belum ada
       - name: Create release if not exists
         if: env.RELEASE_EXISTS == ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create ${{ github.ref_name }} build/${{ env.ZIP_NAME }} \
             --title "Release ${{ github.ref_name }}" \
             --notes "Auto-generated release for tag ${{ github.ref_name }}"
 
-      # Step 6: Tambahkan asset ke release yang ada
+      # Step 7: Tambahkan asset ke release yang ada
       - name: Upload asset to existing release
         if: env.RELEASE_EXISTS != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} build/${{ env.ZIP_NAME }} --clobber

@@ -125,6 +125,10 @@ jobs:
       - name: Update release changelog
         id: update_config
         run: |
+          # Set identitas pengguna Git untuk commit (GitHub Actions environment)
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions[bot]"
+
           # Simpan perubahan sementara (stash) jika ada
           git stash --include-untracked || echo "Tidak ada perubahan yang perlu di-stash."
 

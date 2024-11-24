@@ -53,7 +53,7 @@ jobs:
         env:
           MODULE_PROP: "module.prop"
         run: |
-          UPDATE_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/update.json"
+          UPDATE_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/release/update.json"
 
           # add module_prop
           touch $MODULE_PROP
@@ -117,3 +117,39 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} build/${{ env.ZIP_NAME }} --clobber
+
+      # Step 9: Update changelog
+      - name: Update release changelog
+        id: update_config
+        run: |
+          git checkout -f release || git switch --discard-changes --orphan update
+          get_update_json() {
+            echo "{
+            \"version\": \"$1\",
+            \"versionCode\": ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }},
+            \"zipUrl\": \"$2\",
+            \"changelog\": \"https://raw.githubusercontent.com/$GITHUB_REPOSITORY/release/build.md\"
+          }"
+          }
+
+          cd build || { echo "build folder not found"; exit 1; }
+          [ "$OUTPUT" = "*BoxForMagisk-WebUI-*.zip" ] && continue
+          ZIP_S=$(unzip -p "$OUTPUT" module.prop)
+          if ! UPDATE_JSON=$(echo "$ZIP_S" | grep updateJson); then continue; fi
+          UPDATE_JSON="${UPDATE_JSON##*/}"
+          VER=$(echo "$ZIP_S" | grep version=)
+          VER="${VER##*=}"
+          DLURL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ github.ref_name }}/${OUTPUT}"
+          get_update_json "$VER" "$DLURL" >"../$UPDATE_JSON"
+          cd ..
+
+          find . -name "*-update.json" | grep . || : >dummy-update.json
+
+      # update changelog
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          branch: release
+          skip_checkout: true
+          file_pattern: *-update.json
+          commit_message: release ${{ github.ref_name }}
+          

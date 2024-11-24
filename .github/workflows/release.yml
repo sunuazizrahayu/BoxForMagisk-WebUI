@@ -74,7 +74,8 @@ jobs:
           git archive --format=zip --output="build/$ZIP_NAME" HEAD ':!/.github'
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
           echo "Build results"
-          ls -la
+          cat $MODULE_PROP
+          ls -la build
 
       # Step 7: Tambahkan asset ke release yang ada
       - name: Upload asset to existing release

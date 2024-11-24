@@ -145,9 +145,9 @@ jobs:
 
           # update data
           UPDATE_JSON_FILE="update.json"
-          sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" $UPDATE_JSON_FILE
-          sed -i "s/\"versionCode\": \".*\"/\"versionCode\": \"$VERSION_CODE\"/" $UPDATE_JSON_FILE
-          sed -i "s/\"zipUrl\": \".*\"/\"zipUrl\": \"$DLURL\"/" $UPDATE_JSON_FILE
+          sed -i "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" $UPDATE_JSON_FILE
+          sed -i "s|\"versionCode\": \".*\"|\"versionCode\": \"$VERSION_CODE\"|" $UPDATE_JSON_FILE
+          sed -i "s|\"zipUrl\": \".*\"|\"zipUrl\": \"$DLURL\"|" $UPDATE_JSON_FILE
           
           echo "Result:"
           cat $UPDATE_JSON_FILE

@@ -161,14 +161,24 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "github-actions[bot]"
 
-          # Pastikan berada di branch release dan reset isinya
+          # Periksa dan buat branch release jika belum ada
           git fetch origin
-          git checkout release || git checkout -b release
-          git reset --hard
+          if git show-ref --verify --quiet refs/heads/release; then
+            git checkout release
+          else
+            git checkout --orphan release
+          fi
 
-          # Hanya menambahkan file update.json
+          # Bersihkan semua file di branch release
+          git rm -rf . --ignore-unmatch
+          git clean -fdx
+
+          # Pindahkan file update.json ke branch release
+          mv update.json update.json
+
+          # Commit hanya file update.json
           git add update.json
           git commit -m "release ${{ github.ref_name }}"
 
-          # Push perubahan ke remote release branch
-          git push origin release
+          # Push perubahan ke remote branch release
+          git push origin release --force

@@ -143,7 +143,7 @@ jobs:
           ZIP_CONTENT=$(unzip -p "$ZIP_FILE" module.prop || echo "")
           VERSION=$(echo "$ZIP_CONTENT" | grep '^version=' | cut -d '=' -f 2)
           VERSION_CODE=$(date +"%Y%m%d%H%M")
-          DLURL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ github.ref_name }}/$ZIP_FILE"
+          DLURL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ github.ref_name }}/${{ env.ZIP_NAME }}"
 
           if [ -z "$VERSION" ]; then
             VERSION="${{ github.ref_name }}"

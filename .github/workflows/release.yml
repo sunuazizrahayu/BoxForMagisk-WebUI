@@ -150,6 +150,6 @@ jobs:
         with:
           branch: release
           skip_checkout: true
-          file_pattern: *-update.json
+          file_pattern: build.md *-update.json
           commit_message: release ${{ github.ref_name }}
           

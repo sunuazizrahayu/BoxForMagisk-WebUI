@@ -166,4 +166,4 @@ jobs:
           git commit -am "${{ github.ref_name }}"
 
           # Push perubahan ke remote branch release
-          git push origin main
+          git push origin main --force

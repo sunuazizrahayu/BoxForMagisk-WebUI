@@ -73,10 +73,10 @@ jobs:
           VERSION_CODE=$(date +"%Y%m%d%H%M")
           if grep -q "^versionCode=" "$MODULE_PROP"; then
             # override
-            sed -i "s|^versionCode=.*|versionCode=${{ github.ref_name }}|" "$MODULE_PROP"
+            sed -i "s|^versionCode=.*|versionCode=$VERSION_CODE|" "$MODULE_PROP"
           else
             # append
-            echo "versionCode=${{ github.ref_name }}" >> "$MODULE_PROP"
+            echo "versionCode=$VERSION_CODE" >> "$MODULE_PROP"
           fi
 
           # Periksa apakah `updateJson` ada

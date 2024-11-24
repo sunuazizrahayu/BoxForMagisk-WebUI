@@ -169,12 +169,20 @@ jobs:
             git checkout --orphan release
           fi
 
+          # backup
+          RELEASE_DIR=/tmp/release/
+          mkdir -p $RELEASE_DIR
+          cp update.json $RELEASE_DIR
+
           # Bersihkan semua file di branch release
           git rm -rf . --ignore-unmatch
           git clean -fdx
 
-          # Pindahkan file update.json ke branch release
-          mv update.json update.json
+          # Pindahkan file release ke branch release
+          cp -r ${{ RELEASE_DIR }}* .
+
+          # show files
+          ls -la
 
           # Commit hanya file update.json
           git add update.json

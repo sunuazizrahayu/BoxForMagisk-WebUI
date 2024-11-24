@@ -179,7 +179,7 @@ jobs:
           git clean -fdx
 
           # Pindahkan file release ke branch release
-          cp -r ${{ RELEASE_DIR }}* .
+          cp -r ${{ env.RELEASE_DIR }}* .
 
           # show files
           ls -la

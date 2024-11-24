@@ -71,7 +71,9 @@ jobs:
         run: |
           mkdir build
           ZIP_NAME="BoxForMagisk-WebUI-${{ github.ref_name }}.zip"
-          git archive --format=zip --output="build/$ZIP_NAME" HEAD ':!/.github'
+          # git archive --format=zip --output="build/$ZIP_NAME" HEAD ':!/.github' # ambil dari github `head`
+          # build manual
+          zip -r "build/$ZIP_NAME" . -x ".github/*"
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
           echo "Build results"
           cat $MODULE_PROP

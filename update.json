@@ -1,6 +1,6 @@
 {
-  "version": "xxxxx",
-  "versionCode": "xxxxx",
-  "zipUrl": "xxxxx",
+  "version": "v.1.0.6.4-rc6",
+  "versionCode": "",
+  "zipUrl": "https://github.com/sunuazizrahayu/BoxForMagisk-WebUI/releases/download/v.1.0.6.4-rc6/BoxForMagisk-WebUI-v.1.0.6.4-rc6.zip",
   "changelog": "https://raw.githubusercontent.com/sunuazizrahayu/BoxForMagisk-WebUI/main/CHANGELOG.md"
 }

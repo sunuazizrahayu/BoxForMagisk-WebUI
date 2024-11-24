@@ -123,14 +123,13 @@ jobs:
 
       # Step 9: Update changelog
       - name: Update release changelog
-        id: update_config
         run: |
           # Set identitas pengguna Git untuk commit (GitHub Actions environment)
           git config --global user.email "action@github.com"
           git config --global user.name "github-actions[bot]"
 
-          # Simpan perubahan sementara (stash) jika ada
-          git stash --include-untracked || echo "Tidak ada perubahan yang perlu di-stash."
+          # hapus semua perubahan
+          git stash || echo "Tidak ada perubahan yang perlu di-stash."
 
           # Pastikan branch `release` ada, jika tidak buat branch baru
           if git show-ref --verify --quiet refs/heads/release; then
@@ -140,9 +139,6 @@ jobs:
             git reset --hard
             git commit --allow-empty -m "Initial commit for release branch"
           fi
-
-          # Ambil perubahan dari stash jika ada
-          git stash pop || echo "Tidak ada perubahan untuk diambil dari stash."
 
           # Fungsi untuk membuat JSON pembaruan
           get_update_json() {
@@ -177,13 +173,13 @@ jobs:
           fi
 
           # Buat file update.json
-          UPDATE_JSON_FILE="../update.json"
+          UPDATE_JSON_FILE="update.json"
           get_update_json "$VERSION" "$VERSION_CODE" "$DLURL" > "$UPDATE_JSON_FILE"
 
           # Kembali ke root dan cek hasil
-          cd ..
           echo "File JSON pembaruan dibuat:"
           cat "$UPDATE_JSON_FILE"
+          ls -la
 
       # Commit file update.json dan build.md
       - uses: stefanzweifel/git-auto-commit-action@v5

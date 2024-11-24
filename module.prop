@@ -2,5 +2,5 @@ id=bfm-webui
 name=Box for Magisk - WebUI
 version=v1.0.6.1
 versionCode=20241124
-author=ZAPBER
-description=Universal WebUI for Box for Magisk with php webserver, use gateway or 127.0.0.1:80 or 127.0.0.1 direct
+author=sunuazizrahayu
+description=Universal WebUI for Box for Magisk with php webserver (forked from ZAPBER), use gateway or 127.0.0.1:80 or 127.0.0.1 direct

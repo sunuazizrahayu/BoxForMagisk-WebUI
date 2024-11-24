@@ -60,7 +60,7 @@ jobs:
 
           # Set version
           echo "Set version"
-          if grep -q "^version=" "${{ github.ref_name }}"; then
+          if grep -q "^version=" "$MODULE_PROP"; then
             # override
             sed -i "s|^version=.*|version=${{ github.ref_name }}|" "$MODULE_PROP"
           else
@@ -71,7 +71,7 @@ jobs:
           # Set version code
           echo "Set version code"
           VERSION_CODE=$(date +"%Y%m%d%H%M")
-          if grep -q "^versionCode=" "${{ github.ref_name }}"; then
+          if grep -q "^versionCode=" "$MODULE_PROP"; then
             # override
             sed -i "s|^versionCode=.*|versionCode=${{ github.ref_name }}|" "$MODULE_PROP"
           else
@@ -91,6 +91,7 @@ jobs:
             echo "updateJson ditambahkan ke $MODULE_PROP."
           fi
 
+          echo "result:"
           cat $MODULE_PROP
 
       # Step 7: Buat file ZIP dengan mengecualikan `.github`

@@ -122,7 +122,7 @@ jobs:
       - name: Update release changelog
         id: update_config
         run: |
-          git checkout -f release || git switch --discard-changes --orphan update
+          git checkout -f release || git switch --discard-changes --orphan release
           get_update_json() {
             echo "{
             \"version\": \"$1\",

@@ -53,12 +53,9 @@ jobs:
         env:
           MODULE_PROP: "module.prop"
         run: |
-          UPDATE_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/release/update.json"
+          UPDATE_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/update.json"
           COMMIT_HASH=$(git rev-parse --short HEAD)
           NEXT_VER_CODE=${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
-
-          # add module_prop
-          touch $MODULE_PROP
 
           # Set version
           echo "Set version"
@@ -109,6 +106,8 @@ jobs:
           zip -r "build/$ZIP_NAME" . \
             -x ".git/*" \
             -x ".github/*" \
+            -x "update.json" \
+            -x "CHANGELOG.md" \
             -x "build/*"
 
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
@@ -127,15 +126,6 @@ jobs:
       # Step 9: Create update.json file
       - name: Create update.json
         run: |
-          get_update_json() {
-            echo "{
-              \"version\": \"$1\",
-              \"versionCode\": \"$2\",
-              \"zipUrl\": \"$3\",
-              \"changelog\": \"https://raw.githubusercontent.com/$GITHUB_REPOSITORY/release/README.md\"
-            }"
-          }
-
           # Mengambil informasi dari file ZIP
           ZIP_FILE=$(ls build/BoxForMagisk-WebUI-*.zip 2>/dev/null | head -n 1)
           if [ -z "$ZIP_FILE" ]; then
@@ -143,6 +133,7 @@ jobs:
             exit 1
           fi
 
+          # extract data
           ZIP_CONTENT=$(unzip -p "$ZIP_FILE" module.prop || echo "")
           VERSION=$(echo "$ZIP_CONTENT" | grep '^version=' | cut -d '=' -f 2)
           VERSION_CODE=$(echo "$ZIP_CONTENT" | grep '^versionCode=' | cut -d '=' -f 2)
@@ -152,45 +143,27 @@ jobs:
             VERSION="${{ github.ref_name }}"
           fi
 
+          # update data
           UPDATE_JSON_FILE="update.json"
-          get_update_json "$VERSION" "$VERSION_CODE" "$DLURL" > "$UPDATE_JSON_FILE"
+          sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" $UPDATE_JSON_FILE
+          sed -i "s/\"versionCode\": \".*\"/\"versionCode\": \"$VERSION_CODE\"/" $UPDATE_JSON_FILE
+          sed -i "s/\"zipUrl\": \".*\"/\"zipUrl\": \"$DLURL\"/" $UPDATE_JSON_FILE
+          
           echo "Result:"
-          ls -la
+          cat $UPDATE_JSON_FILE
 
-      # Step 9: Commit hanya update.json ke branch release
-      - name: Commit and Push update.json to release branch
+      # Step 9: Commit UPDATE
+      - name: Commit and Push update
         run: |
           # Menyiapkan Git user
           git config --global user.email "action@github.com"
           git config --global user.name "github-actions[bot]"
 
-          # Periksa dan buat branch release jika belum ada
-          git fetch origin
-          if git show-ref --verify --quiet refs/heads/release; then
-            git checkout release
-          else
-            git checkout --orphan release
-          fi
-
-          # backup
-          RELEASE_DIR=/tmp/release/
-          mkdir -p $RELEASE_DIR
-          cp update.json $RELEASE_DIR
-
-          # Bersihkan semua file di branch release
-          git rm -rf . --ignore-unmatch
-          git clean -fdx
-
-          # Pindahkan file release ke branch release
-          cp -r $RELEASE_DIR* .
-          touch README.md
-
           # show files
           ls -la
 
           # Commit hanya file update.json
-          git add .
-          git commit -m "release ${{ github.ref_name }}"
+          git commit -am "${{ github.ref_name }}"
 
           # Push perubahan ke remote branch release
-          git push origin release --force
+          git push origin main

@@ -125,34 +125,62 @@ jobs:
       - name: Update release changelog
         id: update_config
         run: |
-          git checkout -f release || git switch --discard-changes --orphan release
+          # Pastikan branch `release` ada, jika tidak buat branch baru
+          if git show-ref --verify --quiet refs/heads/release; then
+            git checkout release
+          else
+            git switch --orphan release
+            git reset --hard
+            git commit --allow-empty -m "Initial commit for release branch"
+          fi
+
+          # Fungsi untuk membuat JSON pembaruan
           get_update_json() {
             echo "{
-            \"version\": \"$1\",
-            \"versionCode\": ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }},
-            \"zipUrl\": \"$2\",
-            \"changelog\": \"https://raw.githubusercontent.com/$GITHUB_REPOSITORY/release/build.md\"
-          }"
+              \"version\": \"$1\",
+              \"versionCode\": \"$2\",
+              \"zipUrl\": \"$3\",
+              \"changelog\": \"https://raw.githubusercontent.com/$GITHUB_REPOSITORY/release/README.md\"
+            }"
           }
 
-          cd build || { echo "build folder not found"; exit 1; }
-          [ "$OUTPUT" = "*BoxForMagisk-WebUI-*.zip" ] && continue
-          ZIP_S=$(unzip -p "$OUTPUT" module.prop)
-          if ! UPDATE_JSON=$(echo "$ZIP_S" | grep updateJson); then continue; fi
-          UPDATE_JSON="${UPDATE_JSON##*/}"
-          VER=$(echo "$ZIP_S" | grep version=)
-          VER="${VER##*=}"
-          DLURL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ github.ref_name }}/${OUTPUT}"
-          get_update_json "$VER" "$DLURL" >"../$UPDATE_JSON"
+          # Masuk ke folder build, cek apakah file ZIP ada
+          cd build || { echo "Folder build tidak ditemukan"; exit 1; }
+
+          # Cari file ZIP
+          ZIP_FILE=$(ls BoxForMagisk-WebUI-*.zip 2>/dev/null | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "Tidak ada file ZIP yang ditemukan di folder build."
+            exit 1
+          fi
+
+          # Ambil informasi dari file ZIP (module.prop)
+          ZIP_CONTENT=$(unzip -p "$ZIP_FILE" module.prop || echo "")
+          VERSION=$(echo "$ZIP_CONTENT" | grep '^version=' | cut -d '=' -f 2)
+          VERSION_CODE=$(date +"%Y%m%d%H%M") # Menggunakan timestamp sebagai kode versi
+          DLURL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${{ github.ref_name }}/$ZIP_FILE"
+
+          # Validasi apakah informasi versi ditemukan
+          if [ -z "$VERSION" ]; then
+            echo "Informasi versi tidak ditemukan di module.prop. Menggunakan fallback."
+            VERSION="${{ github.ref_name }}"
+          fi
+
+          # Buat file update.json
+          UPDATE_JSON_FILE="../update.json"
+          get_update_json "$VERSION" "$VERSION_CODE" "$DLURL" > "$UPDATE_JSON_FILE"
+
+          # Kembali ke root dan cek hasil
           cd ..
+          echo "File JSON pembaruan dibuat:"
+          cat "$UPDATE_JSON_FILE"
 
-          find . -name "*-update.json" | grep . || : >dummy-update.json
-
-      # update changelog
+      # Commit file update.json dan build.md
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           branch: release
           skip_checkout: true
-          file_pattern: build.md *-update.json
-          commit_message: release ${{ github.ref_name }}
+          file_pattern: update.json
+          commit_message: "release ${{ github.ref_name }}"
+
           

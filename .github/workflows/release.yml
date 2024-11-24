@@ -55,7 +55,6 @@ jobs:
         run: |
           UPDATE_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/update.json"
           COMMIT_HASH=$(git rev-parse --short HEAD)
-          NEXT_VER_CODE=${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
 
           # Set version
           echo "Set version"
@@ -69,8 +68,7 @@ jobs:
 
           # Set version code
           echo "Set version code"
-          #VERSION_CODE=$(date +"%Y%m%d")
-          VERSION_CODE=$NEXT_VER_CODE
+          VERSION_CODE=$(date +"%Y%m%d")
           if grep -q "^versionCode=" "$MODULE_PROP"; then
             # override
             sed -i "s|^versionCode=.*|versionCode=$VERSION_CODE|" "$MODULE_PROP"

@@ -55,6 +55,7 @@ jobs:
         run: |
           UPDATE_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/release/update.json"
           COMMIT_HASH=$(git rev-parse --short HEAD)
+          NEXT_VER_CODE: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
 
           # add module_prop
           touch $MODULE_PROP
@@ -71,8 +72,8 @@ jobs:
 
           # Set version code
           echo "Set version code"
-          VERSION_CODE=$(date +"%Y%m%d")
-          #VERSION_CODE=$COMMIT_HASH
+          #VERSION_CODE=$(date +"%Y%m%d")
+          VERSION_CODE=$NEXT_VER_CODE
           if grep -q "^versionCode=" "$MODULE_PROP"; then
             # override
             sed -i "s|^versionCode=.*|versionCode=$VERSION_CODE|" "$MODULE_PROP"
@@ -182,12 +183,13 @@ jobs:
 
           # Pindahkan file release ke branch release
           cp -r $RELEASE_DIR* .
+          touch README.md
 
           # show files
           ls -la
 
           # Commit hanya file update.json
-          git add update.json
+          git add .
           git commit -m "release ${{ github.ref_name }}"
 
           # Push perubahan ke remote branch release

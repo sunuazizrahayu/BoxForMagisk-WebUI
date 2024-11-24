@@ -162,8 +162,11 @@ jobs:
           # show files
           ls -la
 
+          # Pastikan berada di branch main
+          git checkout main
+
           # Commit hanya file update.json
-          git commit -am "${{ github.ref_name }}"
+          git commit -am "${{ github.ref_name }}" || echo "Tidak ada perubahan untuk di-commit."
 
           # Push perubahan ke remote branch release
           git push origin main --force

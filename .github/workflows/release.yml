@@ -125,6 +125,9 @@ jobs:
       - name: Update release changelog
         id: update_config
         run: |
+          # Simpan perubahan sementara (stash) jika ada
+          git stash --include-untracked || echo "Tidak ada perubahan yang perlu di-stash."
+
           # Pastikan branch `release` ada, jika tidak buat branch baru
           if git show-ref --verify --quiet refs/heads/release; then
             git checkout release
@@ -133,6 +136,9 @@ jobs:
             git reset --hard
             git commit --allow-empty -m "Initial commit for release branch"
           fi
+
+          # Ambil perubahan dari stash jika ada
+          git stash pop || echo "Tidak ada perubahan untuk diambil dari stash."
 
           # Fungsi untuk membuat JSON pembaruan
           get_update_json() {

@@ -3,5 +3,5 @@ name=Box for Magisk - WebUI
 version=main
 versionCode=main
 author=sunuazizrahayu
-description=Universal WebUI for Box for Magisk with php webserver (forked from ZAPBER/geeks121), use gateway or 127.0.0.1:80 or 127.0.0.1 direct
+description=Universal WebUI for Box for Magisk with php webserver (forked from ZAPBER/geeks121)
 updateJson=

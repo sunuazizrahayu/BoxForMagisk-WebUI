@@ -29,7 +29,7 @@ jobs:
         run: |
           echo "GitHub CLI configured."
 
-      # Step 5: Periksa apakah release dengan tag sudah ada
+      # Step 4: Periksa apakah release dengan tag sudah ada
       - name: Check if release exists
         id: check_release
         env:
@@ -38,7 +38,7 @@ jobs:
           RELEASE_EXISTS=$(gh release view ${{ github.ref_name }} --json id --jq '.id' || echo "")
           echo "RELEASE_EXISTS=$RELEASE_EXISTS" >> $GITHUB_ENV
 
-      # Step 6: Buat release jika belum ada
+      # Step 5: Buat release jika belum ada
       - name: Create release if not exists
         if: env.RELEASE_EXISTS == ''
         env:
@@ -50,30 +50,34 @@ jobs:
 
       # Tambahkan `updateJson` jika tidak ada
       - name: Append updateJson to module.prop if missing
+        env:
+          MODULE_PROP: "module.prop"
         run: |
           UPDATE_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/update.json"
-          MODULE_PROP="module.prop"
 
-          if [ -f "$MODULE_PROP" ]; then
-            if ! grep -q "updateJson" "$MODULE_PROP"; then
-              echo "updateJson=$UPDATE_URL" >> "$MODULE_PROP"
-              echo "updateJson added to $MODULE_PROP."
-            else
-              echo "updateJson already exists in $MODULE_PROP."
-            fi
+          # add module_prop
+          touch $MODULE_PROP
+
+          # add `updateJson`
+          if ! grep -q "updateJson" "$MODULE_PROP"; then
+            echo "updateJson=$UPDATE_URL" >> "$MODULE_PROP"
+            echo "updateJson added to $MODULE_PROP."
           else
-            echo "module.prop not found. Skipping updateJson addition."
+            echo "updateJson already exists in $MODULE_PROP."
           fi
           cat $MODULE_PROP
 
-      # Step 4: Buat file ZIP dengan mengecualikan `.github`
+      # Step 6: Buat file ZIP dengan mengecualikan `.github`
       - name: Create zip file
         run: |
           mkdir build
           ZIP_NAME="BoxForMagisk-WebUI-${{ github.ref_name }}.zip"
-          # git archive --format=zip --output="build/$ZIP_NAME" HEAD ':!/.github' # ambil dari github `head`
+          # build with github head
+          # git archive --format=zip --output="build/$ZIP_NAME" HEAD ':!/.github'
+
           # build manual
           zip -r "build/$ZIP_NAME" . -x ".github/*"
+
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
           echo "Build results"
           cat $MODULE_PROP

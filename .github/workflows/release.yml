@@ -17,9 +17,28 @@ jobs:
         with:
           fetch-depth: 0 # Pastikan semua data git history diambil
 
-      # Step 2: Install GitHub CLI (gh)
-      - name: Install GitHub CLI
-        run: sudo apt-get install -y gh
+      ## Step 2: Install GitHub CLI (gh)
+      #- name: Install GitHub CLI
+      #  run: sudo apt-get install -y gh
+
+      # Tambahkan `updateJson` jika tidak ada
+      - name: Append updateJson to module.prop if missing
+        run: |
+          REPO_OWNER=${{ github.repository_owner }}
+          REPO_NAME=${{ github.event.repository.name }}
+          UPDATE_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/update.json"
+          MODULE_PROP="module.prop"
+
+          if [ -f "$MODULE_PROP" ]; then
+            if ! grep -q "updateJson" "$MODULE_PROP"; then
+              echo "updateJson=$UPDATE_URL" >> "$MODULE_PROP"
+              echo "updateJson added to $MODULE_PROP."
+            else
+              echo "updateJson already exists in $MODULE_PROP."
+            fi
+          else
+            echo "module.prop not found. Skipping updateJson addition."
+          fi
 
       # Step 3: Set GH_TOKEN environment variable
         # GH_TOKEN digunakan oleh GitHub CLI untuk autentikasi

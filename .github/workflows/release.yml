@@ -103,7 +103,10 @@ jobs:
           # git archive --format=zip --output="build/$ZIP_NAME" HEAD ':!/.github'
 
           # build manual
-          zip -r "build/$ZIP_NAME" . -x ".github/*"
+          zip -r "build/$ZIP_NAME" . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x "build/*"
 
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
           echo "Build results"

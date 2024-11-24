@@ -1,7 +1,7 @@
 id=bfm-webui
 name=Box for Magisk - WebUI
-version=v.1.0.6.4-rc6
-versionCode=
+version=v.1.0.6.4-rc7
+versionCode=20241124
 author=sunuazizrahayu
 description=Universal WebUI for Box for Magisk with php webserver (forked from ZAPBER/geeks121)
 updateJson=https://raw.githubusercontent.com/sunuazizrahayu/BoxForMagisk-WebUI/main/update.json

@@ -55,7 +55,7 @@ jobs:
         run: |
           UPDATE_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/release/update.json"
           COMMIT_HASH=$(git rev-parse --short HEAD)
-          NEXT_VER_CODE: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
+          NEXT_VER_CODE=${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
 
           # add module_prop
           touch $MODULE_PROP
